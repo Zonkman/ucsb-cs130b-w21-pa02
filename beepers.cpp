@@ -51,14 +51,12 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], bool
 
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
-
 	//somehow prevent repeat edges
 	int uniqueSum = availEdges[0] + (availEdges[i]*ptCount);
 	if (edgeExistCheck[uniqueSum]) { continue; }
 
 	edgeExistCheck[uniqueSum] = true;
 
-	if (adjacencyInfo[availEdges[0]] == 1 && adjacencyInfo[availEdges[i]] == 1) { continue; }
         int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
 	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
 	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, edgeExistCheck, newIdx);
