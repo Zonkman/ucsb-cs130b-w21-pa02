@@ -70,22 +70,20 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
-	for (int i2 = 0; i2 < i; ++i2) {
-	    int ptRootsNew[ptCount];
-	    for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
+	int ptRootsNew[ptCount];
+	for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
 
-	    //but then we need to check early cycles and repeats... union find
-	    if (GetRoot(ptRootsNew, availEdges[i2]) == GetRoot(ptRootsNew, availEdges[i])) { continue; }
+	//but then we need to check early cycles and repeats... union find
+	if (GetRoot(ptRootsNew, availEdges[0]) == GetRoot(ptRootsNew, availEdges[i])) { continue; }
 	
-	    // recursively set new root	
-	    SetRoot(ptRootsNew, availEdges[i2], availEdges[i]);
+	// recursively set new root	
+	SetRoot(ptRootsNew, availEdges[0], availEdges[i]);
 
-            int cost = (ptInfo[availEdges[i2]]).Distance(ptInfo[availEdges[i]]);
-	    int newIdx = idx + Power(3, availEdges[i2]) + Power(3, availEdges[i]);
-	    int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, newIdx);
-	    if (cost + subproblem < minCounter) {
-	        minCounter = cost + subproblem;
-	    }
+        int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
+	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
+	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, newIdx);
+	if (cost + subproblem < minCounter) {
+	    minCounter = cost + subproblem;
 	}
     }
 
@@ -109,22 +107,35 @@ int Solve() {
     }
     if (beeperCount > 10) { return -1; }
 
-    int tabSize = Power(3, 1+beeperCount);
-    int tabulation[tabSize];
-    for (int i = 0; i < tabSize; ++i) { tabulation[i] = -1; }
-
+    
     Point ptInfo[1+beeperCount];
+    int ptUniqueCount = 1;
     ptInfo[0] = Point(xStart, yStart);
 
     for (int i = 0; i < beeperCount; ++i) {
 	int xBi, yBi; std::cin >> xBi >> yBi;
-        ptInfo[1+i] = Point(xBi, yBi);
+	bool notUnique = false;
+	for (int j = 0; j < ptUniqueCount; ++j) {
+	     if (ptInfo[j].x == xBi && ptInfo[j].y == yBi) {
+	          notUnique = true; break;
+	     }
+	}
+	if (notUnique) { continue; }
+        ptInfo[ptUniqueCount] = Point(xBi, yBi);
+	++ptUniqueCount;
     }
 
-    int ptRoots[1+beeperCount];
-    for (int i = 0; i < 1+beeperCount; ++i) { ptRoots[i] = i; }
+    Point ptInfo2[ptUniqueCount];
+    for (int i = 0; i < ptUniqueCount; ++i) { ptInfo2[i] = ptInfo[i]; }
 
-    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, ptRoots, 0);
+    int tabSize = Power(3, ptUniqueCount);
+    int tabulation[tabSize];
+    for (int i = 0; i < tabSize; ++i) { tabulation[i] = -1; }
+
+    int ptRoots[ptUniqueCount];
+    for (int i = 0; i < ptUniqueCount; ++i) { ptRoots[i] = i; }
+
+    return SolveHelper(ptUniqueCount, tabSize, tabulation, ptInfo2, ptRoots, 0);
 }
 
 int main(int argc, char** argv) {
