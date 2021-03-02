@@ -65,21 +65,22 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 	int uniqueSum = (availEdges[0] < availEdges[i])?(availEdges[0] + (ptCount*availEdges[i])):(availEdges[i] + (ptCount*availEdges[0]));
 	if (edgeExistCheck[uniqueSum]) { continue; }
 
-	//but then we need to check early cycles too... union find
-	if (GetRoot(ptRoots, availEdges[0]) == GetRoot(ptRoots, availEdges[i])) { continue; }
+        int ptRootsNew[ptCount];
+	for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
 
-        int oldHighRoot = ptRoots[availEdges[i]];
-	ptRoots[availEdges[i]] = ptRoots[availEdges[0]];
+	//but then we need to check early cycles too... union find
+	if (GetRoot(ptRootsNew, availEdges[0]) == GetRoot(ptRootsNew, availEdges[i])) { continue; }
+	ptRootsNew[availEdges[i]] = ptRootsNew[availEdges[0]];
+
 	edgeExistCheck[uniqueSum] = true;
 
         int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
 	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
-	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRoots, edgeExistCheck, newIdx);
+	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, edgeExistCheck, newIdx);
 	if (cost + subproblem < minCounter) {
 	    minCounter = cost + subproblem;
 	}
 
-	ptRoots[availEdges[i]] = oldHighRoot;
 	edgeExistCheck[uniqueSum] = false;
     }
 
