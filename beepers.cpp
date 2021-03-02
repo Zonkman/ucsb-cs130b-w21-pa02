@@ -21,6 +21,16 @@ int Power(int b, int x) { // naive because small x
     return b*Power(b, x-1);
 }
 
+int GetRoot(int ptRoots[], int v) {
+    int v2 = v;
+    for (int i = 0; i < 20; ++i) {
+	if (v2 == ptRoots[v2]) { return v2; }
+        v2 = ptRoots[v2];
+	ptRoots[v2] = ptRoots[ptRoots[v2]]; // compression?
+    }
+    return v2;
+}
+
 // there are up to 3^11 = 177147 subproblems to solve
 int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int ptRoots[], bool edgeExistCheck[], int idx) {
     if (tabulation[idx] != -1) { return tabulation[idx]; }
@@ -56,7 +66,7 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 	if (edgeExistCheck[uniqueSum]) { continue; }
 
 	//but then we need to check early cycles too... union find
-	if (ptRoots[availEdges[0]] == ptRoots[availEdges[i]]) { continue; }
+	if (GetRoot(ptRoots, availEdges[0]) == GetRoot(ptRoots, availEdges[i])) { continue; }
 
         int oldHighRoot = ptRoots[availEdges[i]];
 	ptRoots[availEdges[i]] = ptRoots[availEdges[0]];
