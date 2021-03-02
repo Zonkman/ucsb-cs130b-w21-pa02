@@ -21,16 +21,18 @@ int Power(int b, int x) { // naive because small x
     return b*Power(b, x-1);
 }
 
+// find
 int GetRoot(int ptRoots[], int v) {
     int v2 = v;
     for (int i = 0; i < 20; ++i) {
 	if (v2 == ptRoots[v2]) { return v2; }
         v2 = ptRoots[v2];
-	ptRoots[v2] = ptRoots[ptRoots[v2]]; // compression?
+	ptRoots[v2] = ptRoots[ptRoots[v2]]; // compression
     }
     return v2;
 }
 
+// union
 void SetRoot(int ptRoots[], int newRoot, int v) {
     if (ptRoots[v] != v) {
         SetRoot(ptRoots, newRoot, ptRoots[v]);
@@ -39,10 +41,10 @@ void SetRoot(int ptRoots[], int newRoot, int v) {
 }
 
 // there are up to 3^11 = 177147 subproblems to solve
-int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int ptRoots[], /*bool edgeExistCheck[],*/ int idx) {
+int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int ptRoots[], int idx) {
     if (tabulation[idx] != -1) { return tabulation[idx]; }
 
-    if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
+    //if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
 
     // unpack a little
     int adjacencyInfo[ptCount];
@@ -68,9 +70,6 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
-	/*int uniqueSum = (availEdges[0] < availEdges[i])?(availEdges[0] + (ptCount*availEdges[i])):(availEdges[i] + (ptCount*availEdges[0]));
-	if (edgeExistCheck[uniqueSum]) { continue; }*/
-
         int ptRootsNew[ptCount];
 	for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
 
@@ -80,16 +79,12 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 	// recursively set new root	
 	SetRoot(ptRootsNew, availEdges[0], availEdges[i]);
 
-	//edgeExistCheck[uniqueSum] = true;
-
         int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
 	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
-	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, /*edgeExistCheck,*/ newIdx);
+	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, newIdx);
 	if (cost + subproblem < minCounter) {
 	    minCounter = cost + subproblem;
 	}
-
-	//edgeExistCheck[uniqueSum] = false;
     }
 
     tabulation[idx] = minCounter;
@@ -124,14 +119,10 @@ int Solve() {
         ptInfo[1+i] = Point(xBi, yBi);
     }
 
-    //int square = (1+beeperCount)*(1+beeperCount);
-    //bool edgeExistCount[square]; // there are at most as many edges as points in a cycle.
-    //for (int i = 0; i < square; ++i) { edgeExistCount[i] = false; }
-
     int ptRoots[1+beeperCount];
     for (int i = 0; i < 1+beeperCount; ++i) { ptRoots[i] = i; }
 
-    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, ptRoots, /*edgeExistCount,*/ 0);
+    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, ptRoots, 0);
 }
 
 int main(int argc, char** argv) {
