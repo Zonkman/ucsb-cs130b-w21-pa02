@@ -22,7 +22,7 @@ int Power(int b, int x) { // naive because small x
 }
 
 // there are up to 3^11 = 177147 subproblems to solve
-int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], bool edgeExistCheck[], int idx) {
+int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int ptRoots[], bool edgeExistCheck[], int idx) {
     if (tabulation[idx] != -1) { return tabulation[idx]; }
 
     if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
@@ -38,7 +38,7 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], bool
     int availEdges[ptCount];
     int availEdgesCount = 0;
     for (int i = 0; i < ptCount; ++i) {
-        if (adjacencyInfo[i] != 2) {
+        if (adjacencyInfo[i] < 2) {
 	    availEdges[availEdgesCount] = i; ++availEdgesCount;
 	}
     }
@@ -52,18 +52,24 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], bool
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
 	//somehow prevent repeat edges
-	int uniqueSum = availEdges[0] + (availEdges[i]*ptCount);
+	int uniqueSum = (availEdges[0] < availEdges[i])?(availEdges[0] + (ptCount*availEdges[i])):(availEdges[i] + (ptCount*availEdges[0]));
 	if (edgeExistCheck[uniqueSum]) { continue; }
 
+	//but then we need to check early cycles too... union find
+	if (ptRoots[availEdges[0]] == ptRoots[availEdges[i]]) { continue; }
+
+        int oldHighRoot = ptRoots[availEdges[i]];
+	ptRoots[availEdges[i]] = ptRoots[availEdges[0]];
 	edgeExistCheck[uniqueSum] = true;
 
         int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
 	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
-	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, edgeExistCheck, newIdx);
+	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRoots, edgeExistCheck, newIdx);
 	if (cost + subproblem < minCounter) {
 	    minCounter = cost + subproblem;
 	}
 
+	ptRoots[availEdges[i]] = oldHighRoot;
 	edgeExistCheck[uniqueSum] = false;
     }
 
@@ -103,7 +109,10 @@ int Solve() {
     bool edgeExistCount[square]; // there are at most as many edges as points in a cycle.
     for (int i = 0; i < square; ++i) { edgeExistCount[i] = false; }
 
-    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, edgeExistCount, 0);
+    int ptRoots[1+beeperCount];
+    for (int i = 0; i < 1+beeperCount; ++i) { ptRoots[i] = i; }
+
+    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, ptRoots, edgeExistCount, 0);
 }
 
 int main(int argc, char** argv) {
