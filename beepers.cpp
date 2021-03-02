@@ -44,7 +44,7 @@ void SetRoot(int ptRoots[], int newRoot, int v) {
 int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int ptRoots[], int idx) {
     if (tabulation[idx] != -1) { return tabulation[idx]; }
 
-    //if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
+    if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
 
     // unpack a little
     int adjacencyInfo[ptCount];
@@ -70,20 +70,22 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
-        int ptRootsNew[ptCount];
-	for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
+	for (int i2 = 0; i2 < i; ++i2) {
+	    int ptRootsNew[ptCount];
+	    for (int j = 0; j < ptCount; ++j) { ptRootsNew[j] = ptRoots[j]; }
 
-	//but then we need to check early cycles and repeats... union find
-	if (GetRoot(ptRootsNew, availEdges[0]) == GetRoot(ptRootsNew, availEdges[i])) { continue; }
+	    //but then we need to check early cycles and repeats... union find
+	    if (GetRoot(ptRootsNew, availEdges[i2]) == GetRoot(ptRootsNew, availEdges[i])) { continue; }
 	
-	// recursively set new root	
-	SetRoot(ptRootsNew, availEdges[0], availEdges[i]);
+	    // recursively set new root	
+	    SetRoot(ptRootsNew, availEdges[i2], availEdges[i]);
 
-        int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
-	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
-	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, newIdx);
-	if (cost + subproblem < minCounter) {
-	    minCounter = cost + subproblem;
+            int cost = (ptInfo[availEdges[i2]]).Distance(ptInfo[availEdges[i]]);
+	    int newIdx = idx + Power(3, availEdges[i2]) + Power(3, availEdges[i]);
+	    int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, ptRootsNew, newIdx);
+	    if (cost + subproblem < minCounter) {
+	        minCounter = cost + subproblem;
+	    }
 	}
     }
 
