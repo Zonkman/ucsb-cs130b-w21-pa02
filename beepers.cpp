@@ -22,7 +22,7 @@ int Power(int b, int x) { // naive because small x
 }
 
 // there are up to 3^11 = 177147 subproblems to solve
-int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int idx) {
+int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], bool edgeExistCheck[], int idx) {
     if (tabulation[idx] != -1) { return tabulation[idx]; }
 
     if (idx >= Power(3, ptCount) - 1) { return 0; } // base case: already a cycle
@@ -51,13 +51,22 @@ int SolveHelper(int ptCount, int tabSize, int tabulation[], Point ptInfo[], int 
 
     int minCounter = 9999999;
     for (int i = 1; i < availEdgesCount; ++i) {
+
+	//somehow prevent repeat edges
+	int uniqueSum = availEdges[0] + (availEdges[i]*ptCount);
+	if (edgeExistCheck[uniqueSum]) { continue; }
+
+	edgeExistCheck[uniqueSum] = true;
+
 	if (adjacencyInfo[availEdges[0]] == 1 && adjacencyInfo[availEdges[i]] == 1) { continue; }
         int cost = (ptInfo[availEdges[0]]).Distance(ptInfo[availEdges[i]]);
 	int newIdx = idx + Power(3, availEdges[0]) + Power(3, availEdges[i]);
-	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, newIdx);
+	int subproblem = SolveHelper(ptCount, tabSize, tabulation, ptInfo, edgeExistCheck, newIdx);
 	if (cost + subproblem < minCounter) {
 	    minCounter = cost + subproblem;
 	}
+
+	edgeExistCheck[uniqueSum] = false;
     }
 
     tabulation[idx] = minCounter;
@@ -92,7 +101,11 @@ int Solve() {
         ptInfo[1+i] = Point(xBi, yBi);
     }
 
-    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, 0);
+    int square = (1+beeperCount)*(1+beeperCount);
+    bool edgeExistCount[square]; // there are at most as many edges as points in a cycle.
+    for (int i = 0; i < square; ++i) { edgeExistCount[i] = false; }
+
+    return SolveHelper(1+beeperCount, tabSize, tabulation, ptInfo, edgeExistCount, 0);
 }
 
 int main(int argc, char** argv) {
