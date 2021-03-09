@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 // "I Wrote This" by Alex Lancaster (6706998)
 
@@ -80,10 +81,14 @@ int SolveHelper(std::unordered_set<long>& inputSet, std::string& goal, int tabul
 
 void TryToFillOutRegions(int& minSol, std::unordered_set<long>& inputSet, std::unordered_set<long>& partialSet, std::string& goal, int tabulation[], int currSubproblem, int start, int end) {
     int maxInterval = end - start + 1;
+    int lowestIdx = 1000000;
+    int highestIdx = -1000000;
+    
     for (int intervalSize = maxInterval; intervalSize >= 1; --intervalSize) {
         for (int intervalPos = 0; intervalPos <= maxInterval - intervalSize; ++intervalPos) {
 	    int i = start + intervalPos;
 	    int j = i + intervalSize - 1;
+	    if (i >= lowestIdx && j <= highestIdx) { intervalPos += highestIdx - j; continue; }
 	    long h = GetStringHash(goal, i, j);
 	    long hrev = GetStringHash(goal, j, i);
             if (inputSet.find(h) != inputSet.end() || partialSet.find(h) != partialSet.end()
@@ -93,6 +98,8 @@ void TryToFillOutRegions(int& minSol, std::unordered_set<long>& inputSet, std::u
 		for (int k = i; k <= j; ++k) { newSubproblem += (1 << k); }
 		int newSol = 1 + SolveHelper(inputSet, goal, tabulation, newSubproblem);
                 if (newSol < minSol) { minSol = newSol; }
+		if (i < lowestIdx) { lowestIdx = i; }
+		if (j > highestIdx) { highestIdx = j; }
 	    }
 	}
     }
@@ -102,8 +109,10 @@ void TryToFillOutRegions(int& minSol, std::unordered_set<long>& inputSet, std::u
 int SolveHelper(std::unordered_set<long>& inputSet, std::string& goal, int tabulation[], int currSubproblem) {
     if (tabulation[currSubproblem] != -1) { return tabulation[currSubproblem]; }
 
+
     std::unordered_set<long> partialSet; // the other strings we have so far.
     // scan for filled-out regions and add all combinations within each region.
+    
     int regionStart = -1;
     for (int regionScanner = 0; regionScanner < goal.length(); ++regionScanner) {
         bool alreadyAdded = (((currSubproblem >> regionScanner) & 1) == 1);
