@@ -62,7 +62,7 @@ long GetStringHash(std::string& lookup) {
 
 void AddAllInStringRegion(std::unordered_set<long>& set, std::string str, int start, int end) {
     for (int i = start; i <= end; ++i) {
-        for (int j = start; j <= end; ++j) {
+        for (int j = i; j <= end; ++j) {
 	    set.insert(GetStringHash(str, i, j));
 	}
     }
@@ -79,10 +79,15 @@ void PrintSet(std::unordered_set<long>& set) {
 int SolveHelper(std::unordered_set<long>& inputSet, std::string& goal, int tabulation[], int currSubproblem); 
 
 void TryToFillOutRegions(int& minSol, std::unordered_set<long>& inputSet, std::unordered_set<long>& partialSet, std::string& goal, int tabulation[], int currSubproblem, int start, int end) {
-    for (int i = start; i <= end; ++i) {
-        for (int j = i; j <= end; ++j) { // different since we only need to check one direction.
+    int maxInterval = end - start + 1;
+    for (int intervalSize = maxInterval; intervalSize >= 1; --intervalSize) {
+        for (int intervalPos = 0; intervalPos <= maxInterval - intervalSize; ++intervalPos) {
+	    int i = start + intervalPos;
+	    int j = i + intervalSize - 1;
 	    long h = GetStringHash(goal, i, j);
-            if (inputSet.find(h) != inputSet.end() || partialSet.find(h) != partialSet.end()) {
+	    long hrev = GetStringHash(goal, j, i);
+            if (inputSet.find(h) != inputSet.end() || partialSet.find(h) != partialSet.end()
+		|| inputSet.find(hrev) != inputSet.end() || partialSet.find(hrev) != partialSet.end() ) {
 	        // success! we can do this move. next step
 		int newSubproblem = currSubproblem;
 		for (int k = i; k <= j; ++k) { newSubproblem += (1 << k); }
